@@ -1,5 +1,6 @@
-using StockMonitoring.Api.Configuration;
-using StockMonitoring.Api.Services;
+using StockMonitoring.Application.Services;
+using StockMonitoring.Core.Interfaces.Services;
+using StockMonitoring.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<ApiOptions>(
     builder.Configuration.GetSection(ApiOptions.SectionName));
 
-builder.Services.AddHttpClient<IStockService, StockService>();
 builder.Services.AddScoped<IStockService, StockService>();
 
 var app = builder.Build();

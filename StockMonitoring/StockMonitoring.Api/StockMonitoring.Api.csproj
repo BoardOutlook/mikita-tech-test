@@ -17,4 +17,8 @@
     <ProjectReference Include="..\StockMonitoring.Infrastructure\StockMonitoring.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configuration\" />
+  </ItemGroup>
+
 </Project>

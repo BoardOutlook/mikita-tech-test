@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using StockMonitoring.Api.Services;
+using StockMonitoring.Core.Interfaces.Services;
 using StockMonitoring.Core.Models;
 
 namespace StockMonitoring.Api.Controllers;

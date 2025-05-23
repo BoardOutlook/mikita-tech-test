@@ -1,4 +1,4 @@
-namespace StockMonitoring.Api.Configuration;
+namespace StockMonitoring.Infrastructure.Configuration;
 
 public class ApiOptions
 {
