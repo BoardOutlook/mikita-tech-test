@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockMonitoring.Core", "Sto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockMonitoring.Infrastructure", "StockMonitoring.Infrastructure\StockMonitoring.Infrastructure.csproj", "{1B90DB24-471E-47DA-BBC5-7D6CBEF2EBBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockMonitoring.Tests", "StockMonitoring.Tests\StockMonitoring.Tests.csproj", "{73A0AEC9-9A87-4963-9E2D-40D5414226C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{1B90DB24-471E-47DA-BBC5-7D6CBEF2EBBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B90DB24-471E-47DA-BBC5-7D6CBEF2EBBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B90DB24-471E-47DA-BBC5-7D6CBEF2EBBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73A0AEC9-9A87-4963-9E2D-40D5414226C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73A0AEC9-9A87-4963-9E2D-40D5414226C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73A0AEC9-9A87-4963-9E2D-40D5414226C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73A0AEC9-9A87-4963-9E2D-40D5414226C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
