@@ -1,6 +1,6 @@
 using StockMonitoring.Core.Models;
 
-namespace StockMonitoring.Api.Services;
+namespace StockMonitoring.Core.Interfaces.Services;
 
 public interface IStockService
 {

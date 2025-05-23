@@ -1,17 +1,12 @@
-using StockMonitoring.Application.Services;
-using StockMonitoring.Core.Interfaces.Services;
+using StockMonitoring.Api.Configuration;
+using StockMonitoring.Application.Configuration;
 using StockMonitoring.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.Configure<ApiOptions>(
-    builder.Configuration.GetSection(ApiOptions.SectionName));
-
-builder.Services.AddScoped<IStockService, StockService>();
+builder.Services.AddApiServices(builder.Configuration);
+builder.Services.AddApplication(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

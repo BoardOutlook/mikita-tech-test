@@ -15,14 +15,13 @@ public class StockClient(
     : IStockClient
 {
     private readonly string _authCode = apiOptions.Value.AuthCode;
-    private readonly string _baseUrl = apiOptions.Value.BaseUrl;
 
     public async Task<IEnumerable<Company>> GetCompaniesAsync()
     {
         try
         {
             var encodedCode = HttpUtility.UrlEncode(_authCode);
-            var url = $"{_baseUrl}/exchanges/ASX/companies?code={encodedCode}";
+            var url = $"exchanges/ASX/companies?code={encodedCode}";
             
             logger.LogInformation("Fetching companies from {Url}", url);
             return await httpClient.GetFromJsonAsync<IEnumerable<Company>>(url) ?? Enumerable.Empty<Company>();
@@ -38,7 +37,7 @@ public class StockClient(
     {
         try
         {
-            var url = $"{_baseUrl}/companies/{companySymbol}/executives?code={_authCode}";
+            var url = $"companies/{companySymbol}/executives?code={_authCode}";
             
             logger.LogInformation("Fetching executives for company {Symbol} from {Url}", companySymbol, url);
             return await httpClient.GetFromJsonAsync<IEnumerable<Executive>>(url) ?? Enumerable.Empty<Executive>();
@@ -54,7 +53,7 @@ public class StockClient(
     {
         try
         {
-            var url = $"{_baseUrl}/industries/{Uri.EscapeDataString(industry)}/benchmark?code={_authCode}";
+            var url = $"industries/{Uri.EscapeDataString(industry)}/benchmark?code={_authCode}";
             
             logger.LogInformation("Fetching benchmark for industry {Industry} from {Url}", industry, url);
             return await httpClient.GetFromJsonAsync<IndustryBenchmark>(url);
