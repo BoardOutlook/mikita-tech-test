@@ -4,5 +4,5 @@ namespace StockMonitoring.Core.Interfaces.Services;
 
 public interface IStockService
 {
-    Task<IEnumerable<ExecutiveCompensation>> GetHighCompensationExecutivesAsync();
+    Task<IEnumerable<ExecutiveCompensation>> GetHighCompensationExecutivesAsync(CancellationToken cancellationToken = default);
 }
