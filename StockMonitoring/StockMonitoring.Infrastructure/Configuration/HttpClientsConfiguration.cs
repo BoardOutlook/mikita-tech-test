@@ -42,7 +42,6 @@ internal static class HttpClientsConfiguration
         }
 
         client.BaseAddress = new Uri(apiOptions.BaseUrl);
-        client.DefaultRequestHeaders.Add("Authorization", apiOptions.AuthCode);
         client.Timeout = TimeSpan.FromMinutes(5);
     }
 }

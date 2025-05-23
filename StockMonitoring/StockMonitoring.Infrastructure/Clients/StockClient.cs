@@ -37,7 +37,8 @@ public class StockClient(
     {
         try
         {
-            var url = $"companies/{companySymbol}/executives?code={_authCode}";
+            var encodedCode = HttpUtility.UrlEncode(_authCode);
+            var url = $"companies/{companySymbol}/executives?code={encodedCode}";
             
             logger.LogInformation("Fetching executives for company {Symbol} from {Url}", companySymbol, url);
             return await httpClient.GetFromJsonAsync<IEnumerable<Executive>>(url) ?? Enumerable.Empty<Executive>();

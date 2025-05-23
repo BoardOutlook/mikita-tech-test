@@ -22,54 +22,110 @@ public class StockService(
                 return [];
             }
             
-            var allExecutives = new List<Executive>();
-            var industryBenchmarks = new Dictionary<string, decimal>();
+            var allExecutives = await GetAllExecutivesAsync(companies);
             
-            foreach (var company in companies)
-            {
-                if (string.IsNullOrEmpty(company.Symbol))
-                    continue;
-                
-                var executives = (await stockClient.GetExecutivesAsync(company.Symbol)).ToList();
-                if (executives.Count != 0)
-                {
-                    allExecutives.AddRange(executives);
-                }
-            }
+            var industryBenchmarks = await GetIndustryBenchmarksAsync(allExecutives);
             
-            foreach (var industry in allExecutives.Select(e => e.Industry).Distinct().Where(i => !string.IsNullOrEmpty(i)))
-            {
-                var benchmark = await stockClient.GetIndustryBenchmarkAsync(industry!);
-                if (benchmark != null)
-                {
-                    industryBenchmarks[industry!] = benchmark.AverageCompensation;
-                }
-            }
-            
-            var result = new List<ExecutiveCompensation>();
-            foreach (var executive in allExecutives)
-            {
-                if (string.IsNullOrEmpty(executive.Industry) || !industryBenchmarks.ContainsKey(executive.Industry))
-                    continue;
-                
-                var averageCompensation = industryBenchmarks[executive.Industry];
-                if (executive.Compensation >= averageCompensation * 1.1m)
-                {
-                    result.Add(new ExecutiveCompensation
-                    {
-                        NameAndPosition = $"{executive.Name}, {executive.Position}",
-                        Compensation = executive.Compensation,
-                        AverageIndustryCompensation = averageCompensation
-                    });
-                }
-            }
-            
-            return result;
+            return ProcessExecutiveCompensation(allExecutives, industryBenchmarks);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error getting high compensation executives");
             throw;
         }
+    }
+
+    private async Task<List<Executive>> GetAllExecutivesAsync(List<Company> companies)
+    {
+        var allExecutives = new List<Executive>();
+        
+        var validCompanies = companies.Where(c => !string.IsNullOrEmpty(c.Symbol)).ToList();
+        
+        var executiveTasks = validCompanies.Select(async company => 
+        {
+            try
+            {
+                return await stockClient.GetExecutivesAsync(company.Symbol);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error getting executives for company {Symbol}", company.Symbol);
+                return [];
+            }
+        });
+        
+        var executiveResults = await Task.WhenAll(executiveTasks);
+        
+        foreach (var executiveList in executiveResults)
+        {
+            if (executiveList.Any())
+            {
+                allExecutives.AddRange(executiveList);
+            }
+        }
+        
+        return allExecutives;
+    }
+
+    private async Task<Dictionary<string, decimal>> GetIndustryBenchmarksAsync(List<Executive> executives)
+    {
+        var industryBenchmarks = new Dictionary<string, decimal>();
+        
+        var uniqueIndustries = executives
+            .Select(e => e.Industry)
+            .Where(i => !string.IsNullOrEmpty(i))
+            .Distinct()
+            .ToList();
+        
+        var benchmarkTasks = uniqueIndustries.Select(async industry => 
+        {
+            try
+            {
+                var benchmark = await stockClient.GetIndustryBenchmarkAsync(industry!);
+                return (Industry: industry!, Benchmark: benchmark);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error getting benchmark for industry {Industry}", industry);
+                return (Industry: industry!, Benchmark: null);
+            }
+        });
+        
+        var benchmarkResults = await Task.WhenAll(benchmarkTasks);
+        
+        foreach (var result in benchmarkResults)
+        {
+            if (result.Benchmark != null)
+            {
+                industryBenchmarks[result.Industry] = result.Benchmark.AverageCompensation;
+            }
+        }
+        
+        return industryBenchmarks;
+    }
+
+    private List<ExecutiveCompensation> ProcessExecutiveCompensation(
+        List<Executive> executives, 
+        Dictionary<string, decimal> industryBenchmarks)
+    {
+        var result = new List<ExecutiveCompensation>();
+        
+        foreach (var executive in executives)
+        {
+            if (string.IsNullOrEmpty(executive.Industry) || !industryBenchmarks.TryGetValue(executive.Industry, out var averageCompensation))
+                continue;
+
+            if (executive.Compensation >= averageCompensation * 1.1m)
+            {
+                result.Add(new ExecutiveCompensation
+                {
+                    NameAndPosition = $"{executive.Name}, {executive.Position}",
+                    Compensation = executive.Compensation,
+                    AverageIndustryCompensation = averageCompensation
+                });
+            }
+        }
+        
+        return result;
     }
 }
