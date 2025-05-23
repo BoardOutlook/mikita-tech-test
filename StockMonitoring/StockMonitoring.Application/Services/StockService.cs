@@ -68,12 +68,12 @@ public class StockService(
             {
                 logger.LogError(scEx, "Stock API error at endpoint {Endpoint} for company {Symbol}: {Message}", 
                     scEx.Endpoint, company.Symbol, scEx.Message);
-                return Enumerable.Empty<Executive>();
+                return [];
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error getting executives for company {Symbol}", company.Symbol);
-                return Enumerable.Empty<Executive>();
+                return [];
             }
         });
         
@@ -95,7 +95,7 @@ public class StockService(
         var industryBenchmarks = new Dictionary<string, decimal>();
         
         var uniqueIndustries = executives
-            .Select(e => e.Industry)
+            .Select(e => e.IndustryTitle)
             .Where(i => !string.IsNullOrEmpty(i))
             .Distinct()
             .ToList();
@@ -144,15 +144,15 @@ public class StockService(
         
         foreach (var executive in executives)
         {
-            if (string.IsNullOrEmpty(executive.Industry) || !industryBenchmarks.TryGetValue(executive.Industry, out var averageCompensation))
+            if (string.IsNullOrEmpty(executive.IndustryTitle) || !industryBenchmarks.TryGetValue(executive.IndustryTitle, out var averageCompensation))
                 continue;
 
-            if (executive.Compensation >= averageCompensation * 1.1m)
+            if (executive.Total >= averageCompensation * 1.1m)
             {
                 result.Add(new ExecutiveCompensation
                 {
-                    NameAndPosition = $"{executive.Name}, {executive.Position}",
-                    Compensation = executive.Compensation,
+                    NameAndPosition = executive.NameAndPosition,
+                    Compensation = executive.Total,
                     AverageIndustryCompensation = averageCompensation
                 });
             }

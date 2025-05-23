@@ -45,7 +45,7 @@ public class StockClient(
             
             logger.LogInformation("Fetching executives for company {Symbol} from {Url}", companySymbol, url);
             var result = await httpClient.GetFromJsonAsync<IEnumerable<Executive>>(url, cancellationToken);
-            return result ?? Enumerable.Empty<Executive>();
+            return result ?? [];
         }
         catch (Exception ex)
         {
