@@ -10,6 +10,7 @@ public static class ApplicationConfiguration
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IStockService, StockService>();
+        services.AddMemoryCache();
         
         return services;
     }

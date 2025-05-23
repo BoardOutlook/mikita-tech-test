@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using StockMonitoring.Core.Exceptions;
 using StockMonitoring.Core.Interfaces.Clients;
@@ -8,11 +9,13 @@ namespace StockMonitoring.Application.Services;
 
 public class StockService(
     IStockClient stockClient,
+    IMemoryCache memoryCache,
     ILogger<StockService> logger)
     : IStockService
 {
     private const int MaxRetries = 3;
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan CacheExpiration = TimeSpan.FromMinutes(30);
 
     public async Task<IEnumerable<ExecutiveCompensation>> GetHighCompensationExecutivesAsync(CancellationToken cancellationToken = default)
     {
@@ -57,12 +60,28 @@ public class StockService(
         
         var executiveTasks = validCompanies.Select(async company => 
         {
+            var cacheKey = $"Executives_{company.Symbol}";
+            
             try
             {
-                return await ExecuteWithRetryAsync(
-                    ct => stockClient.GetExecutivesAsync(company.Symbol, ct),
-                    $"Failed to retrieve executives for company {company.Symbol} after multiple attempts",
-                    cancellationToken);
+                return await memoryCache.GetOrCreateAsync(cacheKey, async entry => 
+                {
+                    entry.SetAbsoluteExpiration(CacheExpiration);
+                    
+                    var executives = await ExecuteWithRetryAsync(
+                        ct => stockClient.GetExecutivesAsync(company.Symbol, ct),
+                        $"Failed to retrieve executives for company {company.Symbol} after multiple attempts",
+                        cancellationToken);
+                    
+                    if (executives.Any())
+                    {
+                        logger.LogInformation("Cached executives for company {Symbol}", company.Symbol);
+                        return executives;
+                    }
+                    
+                    entry.SetValue(null);
+                    return [];
+                }) ?? [];
             }
             catch (StockClientException scEx)
             {
@@ -102,12 +121,29 @@ public class StockService(
         
         var benchmarkTasks = uniqueIndustries.Select(async industry => 
         {
+            var cacheKey = $"IndustryBenchmark_{industry}";
+            
             try
             {
-                var benchmark = await ExecuteWithRetryAsync(
-                    ct => stockClient.GetIndustryBenchmarkAsync(industry!, ct),
-                    $"Failed to retrieve benchmark for industry {industry} after multiple attempts",
-                    cancellationToken);
+                var benchmark = await memoryCache.GetOrCreateAsync(cacheKey, async entry => 
+                {
+                    entry.SetAbsoluteExpiration(CacheExpiration);
+                    
+                    var result = await ExecuteWithRetryAsync(
+                        ct => stockClient.GetIndustryBenchmarkAsync(industry!, ct),
+                        $"Failed to retrieve benchmark for industry {industry} after multiple attempts",
+                        cancellationToken);
+                    
+                    if (result != null)
+                    {
+                        logger.LogInformation("Cached benchmark for industry {Industry}", industry);
+                        return result;
+                    }
+                    
+                    entry.SetValue(null);
+                    return null;
+                });
+                
                 return (Industry: industry!, Benchmark: benchmark);
             }
             catch (StockClientException scEx)

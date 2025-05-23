@@ -1,5 +1,6 @@
 using System.Net;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using StockMonitoring.Application.Services;
@@ -12,14 +13,25 @@ namespace StockMonitoring.Tests.Services;
 public class StockServiceTests
 {
     private readonly Mock<IStockClient> _mockStockClient;
+    private readonly Mock<IMemoryCache> _mockMemoryCache;
     private readonly Mock<ILogger<StockService>> _mockLogger;
     private readonly StockService _service;
     
     public StockServiceTests()
     {
         _mockStockClient = new Mock<IStockClient>();
+        _mockMemoryCache = new Mock<IMemoryCache>();
         _mockLogger = new Mock<ILogger<StockService>>();
-        _service = new StockService(_mockStockClient.Object, _mockLogger.Object);
+        
+        _mockMemoryCache
+            .Setup(m => m.CreateEntry(It.IsAny<object>()))
+            .Returns(Mock.Of<ICacheEntry>);
+            
+        _mockMemoryCache
+            .Setup(m => m.TryGetValue(It.IsAny<object>(), out It.Ref<object>.IsAny))
+            .Returns(false);
+        
+        _service = new StockService(_mockStockClient.Object, _mockMemoryCache.Object, _mockLogger.Object);
     }
     
     [Fact]
