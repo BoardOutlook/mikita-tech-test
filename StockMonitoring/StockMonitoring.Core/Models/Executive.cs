@@ -1,4 +1,4 @@
-namespace StockMonitoring.Api.Models;
+namespace StockMonitoring.Core.Models;
 
 public record Executive
 {

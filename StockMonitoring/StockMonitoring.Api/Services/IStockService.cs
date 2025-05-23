@@ -1,4 +1,4 @@
-using StockMonitoring.Api.Models;
+using StockMonitoring.Core.Models;
 
 namespace StockMonitoring.Api.Services;
 
